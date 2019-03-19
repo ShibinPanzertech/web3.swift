@@ -50,7 +50,8 @@ open class EthFunctionEncoder {
     
     open func encodeParameters(_ parameters: Array<Any>, methodData: Data) -> Data {
         var result = methodData
-        let dynamicDataOffset: Int = _getLength(parameters) * EthType.MAX_BYTE_LENGTH
+        var dynamicData = Data()
+        var dynamicDataOffset: Int = _getLength(parameters) * EthType.MAX_BYTE_LENGTH
         
         for parameter in parameters {
             let encodedValue = try! EthTypeEncoder.default.encode(parameter)
@@ -60,12 +61,13 @@ open class EthFunctionEncoder {
                 print("Encoded Offset \(encodedDataOffset.bytes)")
                 print("Encoded Offset hex \(encodedDataOffset.bytes.toHexString())")
                 result.append(encodedDataOffset)
-                let encodedParameter = try! EthTypeEncoder.default.encode(parameter)
-                result.append(encodedParameter)
+                dynamicData.append(encodedValue)
+                dynamicDataOffset += encodedValue.toHexString().count >> 1;
             } else {
                 result.append(encodedValue)
             }
         }
+        result.append(dynamicData);
         return result
     }
   
